@@ -1,5 +1,5 @@
 import React from "react";
-import { Image, ImageBackground, StyleSheet, Text } from "react-native";
+import { Image, ImageBackground, StyleSheet, Text, View } from "react-native";
 
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
@@ -21,9 +21,9 @@ const TabIcon = ({ focused, icon, title }: any) => {
   }
 
   return (
-    <view className="size-full justify-center items-center mt-4 rounded-full">
+    <View className="size-full justify-center items-center mt-4 rounded-full">
       <Image source={icon} tintColor="#A8B5DB" className="size-5" />
-    </view>
+    </View>
   );
 };
 
