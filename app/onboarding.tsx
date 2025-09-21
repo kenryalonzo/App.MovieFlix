@@ -1,14 +1,8 @@
-import { StyleSheet, Text, View } from "react-native";
+import Onboarding from "@/components/onboarding/Onboarding";
 import React from "react";
 
-const onboarding = () => {
-  return (
-    <View>
-      <Text>onboarding</Text>
-    </View>
-  );
+const OnboardingPage: React.FC = () => {
+  return <Onboarding />;
 };
 
-export default onboarding;
-
-const styles = StyleSheet.create({});
+export default OnboardingPage;

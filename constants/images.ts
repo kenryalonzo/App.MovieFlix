@@ -1,10 +1,9 @@
-const images = {
-  highlight: require("../assets/images/highlight.png"),
-  bg: require("../assets/images/bg.png"),
-  logo: require("../assets/images/logo.png"),
-  rankingGradient: require("../assets/images/rankingGradient.png"),
+import bg from "@/assets/images/bg.png";
+import highlight from "@/assets/images/highlight.png";
+import rankingGradient from "@/assets/images/rankingGradient.png";
+
+export const images = {
+  bg,
+  highlight,
+  rankingGradient,
 };
-
-export { images };
-
-export default images;

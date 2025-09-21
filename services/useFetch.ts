@@ -1,35 +1,30 @@
-// fetchMovies
-// fetchMoviesDetails
-
-// useFetch(fetchMovies)
-
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
 const useFetch = <T>(fetchFunction: () => Promise<T>, autoFetch = true) => {
   const [data, setData] = useState<T | null>(null);
-  const [loading, SetLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchData = async () => {
     try {
-      SetLoading(true);
+      setLoading(true);
       setError(null);
 
       const result = await fetchFunction();
-
       setData(result);
     } catch (err) {
-      // @ts-ignore
-      setError(err instanceof Error ? err : new Error("An error occurred"));
+      setError(
+        err instanceof Error ? err : new Error("An unknown error occurred")
+      );
     } finally {
-      SetLoading(false);
+      setLoading(false);
     }
   };
 
   const reset = () => {
     setData(null);
-    SetLoading(false);
     setError(null);
+    setLoading(false);
   };
 
   useEffect(() => {
