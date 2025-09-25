@@ -1,19 +1,14 @@
 import { icons } from "@/constants/icons";
 import { useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
-  PanResponder,
+  ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
 import OnboardingScreen from "./OnboardingScreen";
 
 const { width } = Dimensions.get("window");
@@ -57,32 +52,39 @@ const ONBOARDING_DATA = [
   },
 ];
 
-const Onboarding: React.FC = () => {
+interface OnboardingProps {
+  onComplete?: () => void;
+}
+
+const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const translateX = useSharedValue(0);
   const router = useRouter();
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // Synchroniser le ScrollView avec currentIndex
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({
+        x: currentIndex * width,
+        animated: true,
+      });
+    }
+  }, [currentIndex]);
 
   const goToNext = () => {
     if (currentIndex < ONBOARDING_DATA.length - 1) {
-      translateX.value = withSpring(-(currentIndex + 1) * width, {
-        damping: 20,
-        stiffness: 90,
-      });
       setCurrentIndex(currentIndex + 1);
     }
   };
 
   const goToPrevious = () => {
     if (currentIndex > 0) {
-      translateX.value = withSpring(-(currentIndex - 1) * width, {
-        damping: 20,
-        stiffness: 90,
-      });
       setCurrentIndex(currentIndex - 1);
     }
   };
 
   const completeOnboarding = () => {
+    // Naviguer directement vers les tabs (page d'accueil)
     router.replace("/(tabs)");
   };
 
@@ -90,149 +92,87 @@ const Onboarding: React.FC = () => {
     completeOnboarding();
   };
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderMove: (evt, gestureState) => {
-        if (
-          gestureState.dx < -30 &&
-          currentIndex < ONBOARDING_DATA.length - 1
-        ) {
-          runOnJS(goToNext)();
-        } else if (gestureState.dx > 30 && currentIndex > 0) {
-          runOnJS(goToPrevious)();
-        }
-      },
-      onPanResponderRelease: () => {},
-    })
-  ).current;
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
-
   const renderDots = () => {
     return (
-      <View className="flex-row justify-center items-center mb-8">
-        {ONBOARDING_DATA.map((_, index) => {
-          const dotScale = useSharedValue(index === currentIndex ? 1.2 : 1);
-
-          React.useEffect(() => {
-            dotScale.value = withSpring(index === currentIndex ? 1.2 : 1, {
-              damping: 15,
-              stiffness: 100,
-            });
-          }, [currentIndex]);
-
-          const dotAnimatedStyle = useAnimatedStyle(() => ({
-            transform: [{ scale: dotScale.value }],
-          }));
-
-          return (
-            <Animated.View
-              key={index}
-              style={dotAnimatedStyle}
-              className={`w-2 h-2 rounded-full mx-1 ${
-                index === currentIndex ? "bg-accent" : "bg-light-300"
-              }`}
-            />
-          );
-        })}
+      <View className="flex-row justify-center items-center mb-6">
+        {ONBOARDING_DATA.map((_, index) => (
+          <View
+            key={index}
+            className={`w-3 h-3 rounded-full mx-2 ${
+              index === currentIndex ? "bg-accent" : "bg-light-300"
+            }`}
+          />
+        ))}
       </View>
     );
   };
 
   const renderButtons = () => {
-    const buttonScale = useSharedValue(1);
-
-    const buttonAnimatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: buttonScale.value }],
-    }));
-
     if (currentIndex === ONBOARDING_DATA.length - 1) {
       return (
-        <View className="flex-row justify-between items-center px-6">
+        <View className="absolute bottom-16 left-0 right-0 items-center px-8">
+          {/* Bouton Commencer - plus proéminent */}
           <TouchableOpacity
-            onPress={skipOnboarding}
-            className="px-6 py-3"
-            activeOpacity={0.7}
-          >
-            <Text className="text-light-200 text-base">Ignorer</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => {
-              buttonScale.value = withSpring(0.95, {}, () => {
-                buttonScale.value = withSpring(1);
-                runOnJS(completeOnboarding)();
-              });
-            }}
-            className="bg-accent px-8 py-3 rounded-full"
+            onPress={completeOnboarding}
+            className="bg-accent py-4 px-12 rounded-full items-center"
             activeOpacity={0.8}
           >
-            <Animated.View style={buttonAnimatedStyle}>
-              <Text className="text-white text-base font-semibold">
-                Commencer
-              </Text>
-            </Animated.View>
+            <Text className="text-white text-lg font-bold">
+              Commencer l'aventure
+            </Text>
           </TouchableOpacity>
         </View>
       );
     }
 
     return (
-      <View className="flex-row justify-between items-center px-6">
+      <View className="absolute bottom-16 left-0 right-0 items-center px-8">
+        {/* Bouton Suivant - plus proéminent */}
         <TouchableOpacity
-          onPress={skipOnboarding}
-          className="px-6 py-3"
-          activeOpacity={0.7}
-        >
-          <Text className="text-light-200 text-base">Ignorer</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => {
-            buttonScale.value = withSpring(0.95, {}, () => {
-              buttonScale.value = withSpring(1);
-              runOnJS(goToNext)();
-            });
-          }}
-          className="bg-accent px-8 py-3 rounded-full"
+          onPress={goToNext}
+          className="bg-accent py-4 px-12 rounded-full items-center"
           activeOpacity={0.8}
         >
-          <Animated.View style={buttonAnimatedStyle}>
-            <Text className="text-white text-base font-semibold">Suivant</Text>
-          </Animated.View>
+          <Text className="text-white text-lg font-bold">Continuer</Text>
         </TouchableOpacity>
       </View>
     );
   };
 
   return (
-    <View className="flex-1" {...panResponder.panHandlers}>
-      <Animated.View
-        style={[
-          {
-            flex: 1,
-            width: width * ONBOARDING_DATA.length,
-            flexDirection: "row",
-          },
-          animatedStyle,
-        ]}
-      >
-        {ONBOARDING_DATA.map((screen, index) => (
-          <View key={index} style={{ width, flex: 1 }}>
-            <OnboardingScreen {...screen} />
-          </View>
-        ))}
-      </Animated.View>
+    <SafeAreaView className="flex-1 bg-primary">
+      <View className="flex-1">
+        <ScrollView
+          ref={scrollViewRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          scrollEventThrottle={16}
+          onMomentumScrollEnd={(event) => {
+            const index = Math.round(event.nativeEvent.contentOffset.x / width);
+            setCurrentIndex(index);
+          }}
+        >
+          {ONBOARDING_DATA.map((screen, index) => (
+            <View key={index} style={{ width, flex: 1 }}>
+              <OnboardingScreen
+                {...screen}
+                onSkip={skipOnboarding}
+                showSkip={true}
+              />
+            </View>
+          ))}
+        </ScrollView>
 
-      {/* Progress Dots */}
-      {renderDots()}
+        {/* Progress Dots */}
+        <View className="absolute bottom-40 left-0 right-0 items-center">
+          {renderDots()}
+        </View>
 
-      {/* Navigation Buttons */}
-      {renderButtons()}
-    </View>
+        {/* Navigation Buttons */}
+        {renderButtons()}
+      </View>
+    </SafeAreaView>
   );
 };
 

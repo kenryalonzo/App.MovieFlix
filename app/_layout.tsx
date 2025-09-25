@@ -1,28 +1,26 @@
-import { Stack } from "expo-router";
-import "./globals.css";
-import { StatusBar } from "react-native";
-import { useEffect, useState } from "react";
-import { View } from "react-native";
 import Onboarding from "@/components/onboarding/Onboarding";
+import { Stack } from "expo-router";
+import { useEffect, useState } from "react";
+import { StatusBar, View } from "react-native";
+import "./global.css";
 
 export default function RootLayout() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Pour l'instant, on affiche toujours l'onboarding
-    // Plus tard, on pourra vérifier le statut dans AsyncStorage
+    // Désactiver l'onboarding pour éviter la boucle infinie
     const checkOnboardingStatus = async () => {
       try {
         // Simulation d'une vérification
         // const onboardingCompleted = await AsyncStorage.getItem('onboardingCompleted');
         // setShowOnboarding(onboardingCompleted !== 'true');
 
-        // Pour le moment, on affiche l'onboarding à chaque lancement
-        setShowOnboarding(true);
+        // Pour le moment, on désactive l'onboarding
+        setShowOnboarding(false);
       } catch (error) {
         console.error("Error checking onboarding status:", error);
-        setShowOnboarding(true);
+        setShowOnboarding(false);
       } finally {
         setIsLoading(false);
       }
@@ -30,6 +28,11 @@ export default function RootLayout() {
 
     checkOnboardingStatus();
   }, []);
+
+  // Fonction pour terminer l'onboarding
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+  };
 
   if (isLoading) {
     return (
@@ -40,7 +43,7 @@ export default function RootLayout() {
   }
 
   if (showOnboarding) {
-    return <Onboarding />;
+    return <Onboarding onComplete={handleOnboardingComplete} />;
   }
 
   return (
