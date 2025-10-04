@@ -35,7 +35,7 @@ export default function RootLayout() {
   };
 
   if (isLoading) {
-    return (
+    return (docker exec infra-api-gateway-1-1 curl -f http://localhost:3000/health || echo "Pas de réponse du backend"
       <View className="flex-1 bg-primary justify-center items-center">
         <StatusBar hidden={true} />
       </View>
